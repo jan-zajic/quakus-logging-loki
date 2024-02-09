@@ -13,8 +13,7 @@
 
     <properties>
       <!-- adjust to your Quarkus version -->
-      <quarkus.version>1.4.1.Final</quarkus.version>
-
+      <quarkus.version>2.14.1.Final</quarkus.version>
 
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -32,10 +31,15 @@
       <dependencies>
           <dependency>
               <groupId>io.quarkus</groupId>
-              <artifactId>quarkus-bom-deployment</artifactId>
+              <artifactId>quarkus-bom</artifactId>
               <version>${quarkus.version}</version>
               <type>pom</type>
               <scope>import</scope>
+          </dependency>
+          <dependency>
+              <groupId>pl.tkowalcz.tjahzi</groupId>
+              <artifactId>core</artifactId>
+              <version>0.9.31</version>
           </dependency>
       </dependencies>
   </dependencyManagement>

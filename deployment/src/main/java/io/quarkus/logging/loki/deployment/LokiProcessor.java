@@ -24,9 +24,4 @@ class LokiProcessor {
         return new LogHandlerBuildItem(lokiHandlerValueFactory.create(lokiConfig));
     }
 
-    //    @BuildStep
-    //    ExtensionSslNativeSupportBuildItem activateSslNativeSupport() {
-    //        return new ExtensionSslNativeSupportBuildItem(FEATURE);
-    //    }
-
 }

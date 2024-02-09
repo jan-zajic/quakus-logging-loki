@@ -1,61 +1,144 @@
 package io.quarkus.logging.loki;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 
+import io.quarkus.runtime.annotations.ConfigDocMapKey;
 import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
+import io.smallrye.config.WithName;
+import io.smallrye.config.WithParentName;
 
 /**
  * Configuration for Sentry logging.
  */
-@ConfigRoot(phase = ConfigPhase.RUN_TIME, name = "log.loki")
-public class LokiConfig {
+@ConfigMapping(prefix = "log.loki")
+@ConfigRoot(phase = ConfigPhase.RUN_TIME)
+public interface LokiConfig {
 
     /**
-     * Determine whether to enable the Loki logging extension.
+     * enabled
      */
-    @ConfigItem(name = ConfigItem.PARENT)
-    boolean enable;
+    @WithDefault("false")
+    public boolean enabled();
 
     /**
-     * Loki host
-     *
-     * THe host your Loki server is on
+     * url
      */
-    @ConfigItem
-    public Optional<String> host;
+    public Optional<String> logEndpoint();
 
     /**
-     * Loki port
-     *
-     * The port Loki is listening on. Usually port 3100
+     * url
      */
-    @ConfigItem
-    public Optional<Integer> port;
+    public Optional<String> host();
 
     /**
-     * App label
-     *
-     * If present, a label of app=\<appLabel> is supplied
+     * url
      */
-    @ConfigItem
-    public Optional<String> appLabel;
+    @WithDefault("3100")
+    public int port();
 
     /**
-     * Environment
-     *
-     * If present, adds a label for the environment to be able to
-     * distinguish e.g. qa/staging/prod
+     * url
      */
-    @ConfigItem(name = "env")
-    public Optional<String> environment;
+    @WithDefault("false")
+    public boolean useSSL();
 
     /**
-     * The Loki log level.
+     * url
      */
-    @ConfigItem(defaultValue = "WARN")
-    public Level level;
+    @WithDefault( "false")
+    public boolean useDaemonThreads();
+
+    /**
+     * url
+     */
+    public Optional<String> username();
+
+    /**
+     * url
+     */
+    public Optional<String> password();
+
+    /**
+     * url
+     */
+    @WithDefault( "5000")
+    public int connectTimeoutMillis();
+
+    /**
+     * url
+     */
+    @WithDefault( "60000")
+    public int readTimeoutMillis();
+
+    /**
+     * url
+     */
+    @WithDefault( "3")
+    public int maxRetries();
+
+    /**
+     * url
+     */
+    @WithDefault( "32")
+    public int bufferSizeMegabytes();
+
+    /**
+     * url
+     */
+    @WithDefault( "true")
+    public boolean useOffHeapBuffer();
+
+    /**
+     * url
+     */
+    @WithDefault( "102400")
+    public long batchSize();
+
+    /**
+     * url
+     */
+    @WithDefault( "5")
+    public long batchWait();
+
+    /**
+     * url
+     */
+    @WithDefault( "10")
+    public long logShipperWakeupIntervalMillis();
+
+    /**
+     * url
+     */
+    @WithDefault( "10")
+    public int shutdownTimeoutSeconds();
+
+    /**
+     * url
+     */
+    @WithDefault( "10")
+    public int maxLogLineSizeKilobytes();
+
+    /**
+     * url
+     */
+    @WithDefault( "100")
+    public int maxRequestsInFlight();
+
+    /**
+     * Headers
+     */
+    Map<String, String> headers();
+
+    /**
+     * url
+     */
+    Map<String, String> labels();
 
 }
