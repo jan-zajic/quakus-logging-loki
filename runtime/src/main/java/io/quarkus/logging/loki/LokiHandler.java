@@ -50,6 +50,8 @@ public class LokiHandler extends ExtHandler {
     public LokiHandler(LoggingSystem loggingSystem) {
         this.loggingSystem = loggingSystem;
         logger = loggingSystem.createLogger();
+        setLevel(Level.INFO);
+        setFilter(null);
         setFormatter(new SimpleFormatter());
         loggingSystem.start();
     }
