@@ -30,10 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.ErrorManager;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
+import java.util.logging.*;
 
 import org.jboss.logmanager.ExtHandler;
 import org.jboss.logmanager.ExtLogRecord;
@@ -53,6 +50,7 @@ public class LokiHandler extends ExtHandler {
     public LokiHandler(LoggingSystem loggingSystem) {
         this.loggingSystem = loggingSystem;
         logger = loggingSystem.createLogger();
+        setFormatter(new SimpleFormatter());
         loggingSystem.start();
     }
 
@@ -60,6 +58,7 @@ public class LokiHandler extends ExtHandler {
     protected void doPublish(ExtLogRecord record) {
         final String formatted;
         final Formatter formatter = getFormatter();
+
         try {
             formatted = formatter.formatMessage(record); //.format format whole line
         } catch (Exception ex) {
