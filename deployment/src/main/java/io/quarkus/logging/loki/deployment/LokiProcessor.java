@@ -5,6 +5,7 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.LogHandlerBuildItem;
+import io.quarkus.deployment.builditem.NamedLogHandlersBuildItem;
 import io.quarkus.logging.loki.LokiConfig;
 import io.quarkus.logging.loki.LokiHandlerValueFactory;
 
@@ -22,6 +23,13 @@ class LokiProcessor {
     LogHandlerBuildItem addLokiLogHandler(final LokiConfig lokiConfig,
             final LokiHandlerValueFactory lokiHandlerValueFactory) {
         return new LogHandlerBuildItem(lokiHandlerValueFactory.create(lokiConfig));
+    }
+
+    @BuildStep
+    @Record(ExecutionTime.RUNTIME_INIT)
+    NamedLogHandlersBuildItem addCustomHandler(final LokiConfig lokiConfig,
+                                               final LokiHandlerValueFactory lokiHandlerValueFactory) {
+        return new NamedLogHandlersBuildItem(lokiHandlerValueFactory.constructNamedHandlers(lokiConfig));
     }
 
 }

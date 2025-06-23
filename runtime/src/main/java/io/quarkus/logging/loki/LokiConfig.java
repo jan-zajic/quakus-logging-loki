@@ -31,23 +31,28 @@ public interface LokiConfig {
     public boolean enabled();
 
     /**
-     * url
+     * named handler
+     */
+    Optional<String> name();
+
+    /**
+     * log endpoint path
      */
     public Optional<String> logEndpoint();
 
     /**
-     * url
+     * host
      */
     public Optional<String> host();
 
     /**
-     * url
+     * port
      */
     @WithDefault("3100")
     public int port();
 
     /**
-     * url
+     * useSSL
      */
     @WithDefault("false")
     public boolean useSSL();
@@ -59,17 +64,17 @@ public interface LokiConfig {
     public boolean useDaemonThreads();
 
     /**
-     * url
+     * username
      */
     public Optional<String> username();
 
     /**
-     * url
+     * password
      */
     public Optional<String> password();
 
     /**
-     * url
+     * connectTimeoutMillis
      */
     @WithDefault( "5000")
     public int connectTimeoutMillis();
