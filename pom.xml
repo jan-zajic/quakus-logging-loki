@@ -37,9 +37,9 @@
               <scope>import</scope>
           </dependency>
           <dependency>
-              <groupId>pl.tkowalcz.tjahzi</groupId>
-              <artifactId>core</artifactId>
-              <version>0.9.31</version>
+              <groupId>io.github.mjfryc</groupId>
+              <artifactId>mjaron-tinyloki-java</artifactId>
+              <version>1.1.8</version>
           </dependency>
       </dependencies>
   </dependencyManagement>

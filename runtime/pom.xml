@@ -20,8 +20,8 @@
             <artifactId>quarkus-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>pl.tkowalcz.tjahzi</groupId>
-            <artifactId>core</artifactId>
+            <groupId>io.github.mjfryc</groupId>
+            <artifactId>mjaron-tinyloki-java</artifactId>
         </dependency>
         <dependency>
           <groupId>io.quarkus</groupId>

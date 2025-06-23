@@ -16,44 +16,29 @@
  */
 package io.quarkus.logging.loki;
 
-import io.quarkus.runtime.RuntimeValue;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.*;
 
 import org.jboss.logmanager.ExtHandler;
 import org.jboss.logmanager.ExtLogRecord;
-import pl.tkowalcz.tjahzi.LabelSerializer;
-import pl.tkowalcz.tjahzi.LabelSerializers;
-import pl.tkowalcz.tjahzi.LoggingSystem;
-import pl.tkowalcz.tjahzi.TjahziLogger;
+import pl.mjaron.tinyloki.ILogStream;
+import pl.mjaron.tinyloki.Labels;
+import pl.mjaron.tinyloki.Settings;
+import pl.mjaron.tinyloki.TinyLoki;
 
-
-/**
- * @author hrupp
- */
 public class LokiHandler extends ExtHandler {
-    private LoggingSystem loggingSystem;
-    private TjahziLogger logger;
 
-    public LokiHandler(LoggingSystem loggingSystem) {
-        this.loggingSystem = loggingSystem;
-        logger = loggingSystem.createLogger();
+    private TinyLoki loki;
+    private LokiConfig config;
+    private final Map<Labels, ILogStream> streams = new HashMap();
+
+    public LokiHandler(Settings lokiSettings, LokiConfig config) {
+        this.loki = TinyLoki.open(lokiSettings);
+        this.config = config;
         setLevel(Level.INFO);
         setFilter(null);
         setFormatter(new SimpleFormatter());
-        loggingSystem.start();
     }
 
     @Override
@@ -71,38 +56,67 @@ public class LokiHandler extends ExtHandler {
             // nothing to write; don't bother
             return;
         }
-
-        String logLevel = record.getLevel().getName();
         Map<String, String> mdcPropertyMap = record.getMdcCopy();
+        Labels labels = computeLabels(record, mdcPropertyMap);
+        ILogStream stream;
+        synchronized (this) {
+            stream = (ILogStream)this.streams.get(labels);
+            if (stream == null) {
+                stream = this.loki.openStream(labels);
+                this.streams.put(labels, stream);
+            }
+        }
 
-        LabelSerializer labelSerializer = LabelSerializers.threadLocal();
-        labelSerializer.appendLabel("level", logLevel);
-        labelSerializer.appendLabel("logger", record.getLoggerName());
-        labelSerializer.appendLabel("thread", record.getThreadName());
-        appendMdcLogLabels(labelSerializer, mdcPropertyMap);
-
-        logger.log(
-                record.getMillis(),
-                0L,
-                labelSerializer,
-                ByteBuffer.wrap(formatted.getBytes(StandardCharsets.UTF_8))
-        );
+        Labels structuredMetadata = Labels.of();
+        structuredMetadata.l("level", record.getLevel().getName());
+        structuredMetadata.l("logger", record.getLoggerName());
+        structuredMetadata.l("class", record.getSourceClassName());
+        structuredMetadata.l("method", record.getSourceMethodName());
+        structuredMetadata.l("line", record.getSourceLineNumber());
+        structuredMetadata.l("thread", record.getThreadName());
+        for (Map.Entry<String, String> entry : mdcPropertyMap.entrySet()) {
+            if(!labels.getMap().containsKey(entry.getKey())) {
+                structuredMetadata.l(entry.getKey(), entry.getValue());
+            }
+        }
+        stream.log(record.getMillis(), formatted, structuredMetadata);
     }
 
-    private void appendMdcLogLabels(LabelSerializer serializer,
-                                    Map<String, String> mdcPropertyMap) {
-        for(Map.Entry<String,String> entry : mdcPropertyMap.entrySet()) {
-            serializer.appendLabel(entry.getKey(), entry.getValue());
+    private Labels computeLabels(ExtLogRecord record, Map<String, String> mdcPropertyMap) {
+        var labels = Labels.of();
+        //TRACE , DEBUG , INFO , WARN , ERROR and FATAL
+        labels.l("severity", record.getLevel().getName().toUpperCase());
+        //labelSerializer.appendLabel("level", logLevel);
+        //labelSerializer.appendLabel("logger", record.getLoggerName());
+        //labelSerializer.appendLabel("thread", record.getThreadName());
+        for (Map.Entry<String, String> entry : config.labels().entrySet()) {
+            var val = entry.getValue();
+            if(val.startsWith("$")) {
+                var mdcKey = val.substring(1);
+                if(mdcPropertyMap.containsKey(mdcKey)) {
+                    labels.l(entry.getKey(), mdcPropertyMap.get(mdcKey));
+                }
+            }
         }
+        return labels;
     }
 
     @Override
     public void flush() {
+        try {
+            this.loki.sync();
+        } catch (InterruptedException var2) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
     public void close() throws SecurityException {
-        this.loggingSystem.close(1000, (t) -> {});
+        try {
+            this.loki.closeSync();
+        } catch (InterruptedException var2) {
+            Thread.currentThread().interrupt();
+        }
     }
 
 }
