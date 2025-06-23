@@ -22,10 +22,7 @@ import java.util.logging.*;
 
 import org.jboss.logmanager.ExtHandler;
 import org.jboss.logmanager.ExtLogRecord;
-import pl.mjaron.tinyloki.ILogStream;
-import pl.mjaron.tinyloki.Labels;
-import pl.mjaron.tinyloki.Settings;
-import pl.mjaron.tinyloki.TinyLoki;
+import pl.mjaron.tinyloki.*;
 
 public class LokiHandler extends ExtHandler {
 
@@ -69,17 +66,23 @@ public class LokiHandler extends ExtHandler {
 
         Labels structuredMetadata = Labels.of();
         structuredMetadata.l("level", record.getLevel().getName());
-        structuredMetadata.l("logger", record.getLoggerName());
-        structuredMetadata.l("class", record.getSourceClassName());
-        structuredMetadata.l("method", record.getSourceMethodName());
+        if(record.getLoggerName() != null)
+            structuredMetadata.l("logger", record.getLoggerName());
+        if(record.getSourceClassName() != null)
+            structuredMetadata.l("class", record.getSourceClassName());
+        if(record.getSourceMethodName() != null)
+            structuredMetadata.l("method", record.getSourceMethodName());
         structuredMetadata.l("line", record.getSourceLineNumber());
-        structuredMetadata.l("thread", record.getThreadName());
+        if(record.getThreadName() != null)
+            structuredMetadata.l("thread", record.getThreadName());
         for (Map.Entry<String, String> entry : mdcPropertyMap.entrySet()) {
             if(!labels.getMap().containsKey(entry.getKey())) {
-                structuredMetadata.l(entry.getKey(), entry.getValue());
+                if(entry.getValue() != null && !entry.getValue().isEmpty()) {
+                    structuredMetadata.l(entry.getKey(), entry.getValue());
+                }
             }
         }
-        stream.log(record.getMillis(), formatted, structuredMetadata);
+        stream.log(record.getMillis()*1000000L, formatted, structuredMetadata);
     }
 
     private Labels computeLabels(ExtLogRecord record, Map<String, String> mdcPropertyMap) {
@@ -94,7 +97,10 @@ public class LokiHandler extends ExtHandler {
             if(val.startsWith("$")) {
                 var mdcKey = val.substring(1);
                 if(mdcPropertyMap.containsKey(mdcKey)) {
-                    labels.l(entry.getKey(), mdcPropertyMap.get(mdcKey));
+                    var value = mdcPropertyMap.get(mdcKey);
+                    if(value != null && !value.isEmpty()) {
+                        labels.l(entry.getKey(), value);
+                    }
                 }
             }
         }

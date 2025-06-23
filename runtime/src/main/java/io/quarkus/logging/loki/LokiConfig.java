@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 import io.quarkus.runtime.annotations.ConfigDocMapKey;
 import io.quarkus.runtime.annotations.ConfigItem;
@@ -17,9 +18,11 @@ import io.smallrye.config.WithParentName;
 /**
  * Configuration for Sentry logging.
  */
-@ConfigMapping(prefix = "log.loki")
+@ConfigMapping(prefix = "quarkus.log.handler.loki")
 @ConfigRoot(phase = ConfigPhase.RUN_TIME)
 public interface LokiConfig {
+
+    static final Pattern LABEL_NAME_PATTER = Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*");
 
     /**
      * enabled
